@@ -29,3 +29,13 @@ data/
 *.log
 .vscode/
 .idea/
+
+# Paper reproducibility artifacts and isolated validation environments
+artifacts/
+outputs/
+dist/
+build/
+*.egg-info/
+.venv*/
+.pytest_cache/
+__pycache__/

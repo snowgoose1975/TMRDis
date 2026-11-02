@@ -8,16 +8,22 @@ from torch.utils.data import Dataset
 
 from .io import load_embedding, load_embedding_sources, load_vector, read_manifest
 from .normalization import apply_normalization
+from .feature_preprocessing import apply_preprocessing, load_preprocessing
 
 
-def load_manifest_embedding(row: dict[str, str]):
+def load_manifest_embedding(row: dict[str, str], preprocessing=None):
     sources = row.get("embedding_sources", "")
     if sources:
-        return load_embedding_sources(sources)
-    path = row.get("embedding", "")
-    if not path:
-        raise ValueError(f"{row.get('id', '<unknown>')}: missing embedding source")
-    return load_embedding(path, row.get("embedding_key") or None)
+        embedding = load_embedding_sources(sources)
+    else:
+        path = row.get("embedding", "")
+        if not path:
+            raise ValueError("missing embedding source")
+        embedding = load_embedding(path, row.get("embedding_key") or None)
+    declared = load_preprocessing(row.get("feature_preprocessing", ""))
+    if preprocessing is not None and declared is not None and preprocessing != declared:
+        raise ValueError("Manifest recipe differs from checkpoint")
+    return apply_preprocessing(embedding, preprocessing if preprocessing is not None else declared)
 
 
 class ManifestDataset(Dataset[dict[str, Any]]):
@@ -25,14 +31,19 @@ class ManifestDataset(Dataset[dict[str, Any]]):
         self,
         manifest: str | Path,
         normalization: dict[str, Any] | None = None,
+        cache_samples: bool = False,
     ):
         self.rows = read_manifest(manifest)
         self.normalization = normalization
+        self.cache_samples = cache_samples
+        self._samples: dict[int, dict[str, Any]] = {}
 
     def __len__(self) -> int:
         return len(self.rows)
 
     def __getitem__(self, index: int) -> dict[str, Any]:
+        if self.cache_samples and index in self._samples:
+            return self._samples[index]
         row = self.rows[index]
         embedding = load_manifest_embedding(row)
         embedding = apply_normalization(embedding, self.normalization)
@@ -62,6 +73,8 @@ class ManifestDataset(Dataset[dict[str, Any]]):
 
         sample["labels"] = labels
         sample["valid"] = valid
+        if self.cache_samples:
+            self._samples[index] = sample
         return sample
 
 

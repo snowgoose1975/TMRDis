@@ -1,16 +1,24 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "my-disorder-predictor"
-version = "0.1.0"
-description = "A reproducible residue-level protein intrinsic-disorder prediction head"
+version = "0.3.0"
+description = "Paper-v1 MSA-free ProtT5/ESMC BiGRU prediction and reproducible benchmark evaluation"
+readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-  "numpy>=1.24",
-  "torch>=2.1",
-]
+dependencies = ["numpy>=1.24", "torch>=2.1"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3,<9"]
+
+[project.scripts]
+disorder-paper = "my_predictor.paper:main"
 
 [tool.setuptools.packages.find]
 include = ["my_predictor*"]
+
+[tool.setuptools.data-files]
+"share/zchen-disorder-predictor/configs" = ["configs/*.json", "configs/*.tsv"]
+"share/zchen-disorder-predictor/docs" = ["docs/*.md", "docs/*.json"]

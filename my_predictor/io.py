@@ -218,7 +218,7 @@ def read_manifest(path: str | Path) -> list[dict[str, str]]:
                     separators=(",", ":"),
                     sort_keys=True,
                 )
-            for column in ("labels", "mask"):
+            for column in ("labels", "mask", "feature_preprocessing"):
                 value = resolved.get(column, "")
                 if value and not Path(value).is_absolute():
                     resolved[column] = str((path.parent / value).resolve())

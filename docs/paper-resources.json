@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "model_id": "paper-v1-prott5-esmc-bigru",
+  "code_repository": "https://github.com/snowgoose1975/zchen-disorder-predictor",
+  "resources": [
+    {
+      "id": "paper_checkpoints",
+      "relative_root": "models",
+      "identity_manifest": "configs/paper-v1-members.tsv",
+      "members": 10,
+      "availability": "author-supplied artifact bundle; not embedded in Git",
+      "download_url": null,
+      "integrity": "SHA256 before checkpoint deserialization"
+    },
+    {
+      "id": "frozen_development",
+      "relative_root": "development",
+      "identity": "V2 frozen train/val/test splits; original ids, full sequences, residue labels and masks",
+      "availability": "author-supplied frozen records",
+      "download_url": null,
+      "note": "Do not replace split identity by random resplitting or tune on test labels."
+    },
+    {
+      "id": "frozen_plm_arrays",
+      "relative_root": "features",
+      "families": {
+        "prott5": {
+          "producer_model": "ProtT5-XL-UniRef50",
+          "width": 1024,
+          "key": "layer_24"
+        },
+        "esmc": {
+          "producer_model": "ESMC-600M",
+          "width": 1152,
+          "key": "layer_36"
+        }
+      },
+      "availability": "author-supplied exact-sequence-matched arrays",
+      "download_url": null,
+      "provenance": "Producer arrays may be float16; loader converts to float32; arrays exclude BOS/EOS and cover full sequences. Retain native encoder/windowing metadata. A known family name is not proof of the exact encoder revision."
+    },
+    {
+      "id": "sixset_metric_replay",
+      "relative_root": "sixset",
+      "configuration": "configs/paper-v1-evaluation.json",
+      "reference": "configs/paper-v1-reference.tsv",
+      "availability": "export from retained experiment artifacts with disorder-paper export-resources",
+      "download_url": null,
+      "contents": [
+        "full sequence records with native labels/masks",
+        "continuous scores for own model and 13 baselines",
+        "frozen validation-threshold evidence",
+        "SHA256 manifest"
+      ]
+    },
+    {
+      "id": "third_party_inference",
+      "availability": "per-method upstream source, runtime, weights and features required separately",
+      "documentation": "docs/baseline-reproduction.md",
+      "redistribution": "Upstream terms apply; no third-party weights or containers are included."
+    }
+  ],
+  "historical_limits": [
+    "Two ESMC members lack recovered complete per-epoch historical logs; checkpoint identities and predictions are retained.",
+    "Cross-device inference and independent retraining need numerical tolerance rather than a promise of identical weights.",
+    "Some upstream runtime/native-output provenance is incomplete; retained continuous-score replay remains separately verifiable."
+  ],
+  "license_status": "No new code/weight/dataset license is inferred or assigned by this update."
+}

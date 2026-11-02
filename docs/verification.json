@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "model_id": "paper-v1-prott5-esmc-bigru",
+  "validated_local_source_snapshot": "b4601a9a79616429700ad4b34736fd41a03db09f",
+  "snapshot_scope": "Immutable local source archive; published runtime files are identified individually by SHA256 below.",
+  "runtime_code_sha256": {
+    "my_predictor/data.py": "32b0cc6d27fe56858f192f60d020dbac0f612cbda1247b0069c9f5af3f3d5ca4",
+    "my_predictor/embedding.py": "7f933ddfee216768381c965b258cc941bbdc24309d72dca9d9427ccadb082724",
+    "my_predictor/feature_preprocessing.py": "2dc010efcca17af282aec19d3f388921198de21d795097a547c0e11654f8098c",
+    "my_predictor/head_study_models.py": "f5c7f7bf2599efa2a8297e87809e6d6e780e83e6a7aac01fe4341876a707f16d",
+    "my_predictor/io.py": "6571a0b8a5032685bd0e90917076126130e4743efa8b4c8690e80816c7a83445",
+    "my_predictor/metrics.py": "171740d9439eabcb85851952807275bfe4f660ef1698f05abf88ff972ba2acf2",
+    "my_predictor/model.py": "865a0f39d8cf2d88a74650b44a20494c89a12693e0ff06398002a50838bcc3aa",
+    "my_predictor/normalization.py": "f7325162ea9c535e936189bf89ed7f7bb7dc79ec19dd89b8b40fd9d111b106b2",
+    "my_predictor/paper.py": "7e9e009b3306d391c24014fa4a607786a06c845e1c073cf61b72ed2de27e3b5c",
+    "my_predictor/paper_dataset.py": "fcc1f37b4661c3a17d666834b8babb05dbdd8960fdac869970c9380b94c08a17",
+    "my_predictor/paper_inference.py": "b61b5316af5b65781f623bce6d0609f98765b1b21cfe2538013bfffce40d0ede",
+    "my_predictor/paper_metrics.py": "759e44a3d4737defbdab6d508f901f07ca4035e2407c93fe6156886145092523",
+    "my_predictor/paper_replay.py": "d001447aec99e55525cc8bd30a822087e034fb9fc2cff1c00bbd553b05ceb908",
+    "my_predictor/paper_training.py": "a062e2a19c63d7dedf11aaa1e7badab386934a00267a28f6552fb50ba118b902",
+    "my_predictor/sequence_features.py": "e161e3b3e1ca7fc5e7ced9c3cbbe1c20353d140093fc7ced1c109e2860f21de9"
+  },
+  "installed_wheel": {
+    "version": "0.3.0",
+    "sha256": "164236c9e60d6bfef6b9a558b8177453ea8dc91f81cef99377a597183c3859fa",
+    "outside_source_checkout": true,
+    "installed_config_lookup_verified": true,
+    "checks": {
+      "inference": {
+        "returncode": 0,
+        "seconds": 23.62778817495564
+      },
+      "replay": {
+        "returncode": 0,
+        "seconds": 74.99670396494912
+      }
+    }
+  },
+  "inference": {
+    "status": "PASS",
+    "sequence_lengths": [
+      13,
+      327,
+      9439
+    ],
+    "proteins": 3,
+    "residues": 9779,
+    "member_probability_values": 97790,
+    "same_runtime_reference_max_abs_difference": 0.0,
+    "retained_prediction_max_abs_difference": {
+      "ours_ensemble": 0.0,
+      "ours_prott5_mean": 0.0,
+      "ours_esmc_mean": 0.0,
+      "ours_prott5_s20260926": 0.0,
+      "ours_prott5_s20260927": 0.0,
+      "ours_prott5_s20260928": 0.0,
+      "ours_prott5_s20260929": 0.0,
+      "ours_prott5_s20260930": 0.0,
+      "ours_esmc_s20260926": 0.0,
+      "ours_esmc_s20260927": 0.0,
+      "ours_esmc_s20260928": 0.0,
+      "ours_esmc_s20260929": 0.0,
+      "ours_esmc_s20260930": 0.0
+    },
+    "reference_source_sha256": "2d9d2e7ba891d1e176382a8d0777699923b50485cc23693fed06d3e558492106",
+    "runtime": {
+      "torch": "2.14.0+cpu",
+      "numpy": "2.5.3"
+    },
+    "seconds": 21.176254215009976,
+    "checkpoint_identity_status": "original"
+  },
+  "metric_replay": {
+    "status": "PASS",
+    "proteins": 1625,
+    "methods": 14,
+    "baseline_methods": 13,
+    "datasets": 6,
+    "operating_rows": 90,
+    "comparison": {
+      "status": "PASS",
+      "rows": 90,
+      "numeric_fields_checked": 2142,
+      "tolerance": 1e-09
+    },
+    "replayed_table_sha256": "3a376a4addd34abfe5fd5c75243e34bac58daab354954bad0e73961d525b383b",
+    "input_sha256": {
+      "records": "5161e6a5852d25b115aee32edff573758db7c83a2863c2d2003e2d3e50642102",
+      "thresholds": "470158949fcb4d63a03178f13a0acb8a4d4afc9df9d6bb2a1122b185b2bfea33",
+      "scores": {
+        "adopt": "fef0759a20045be19d315ced1277a4c390fb94ec317bed9cd840e09f10e2cd19",
+        "aiupred": "bc869e09b90b5da129b44ff460a1f5d195cfcb135a2356544865798ec0f66e7c",
+        "dispredict3": "664e7661548a99b1b90dfdf5d13f7a773eae72133254690cb926028cf8db5b56",
+        "esmdispred_dnn": "ab43b6055bd50417dfb009a6c95743a73f4057df205f30c73bc5ccff1c8cebff",
+        "fldpnn": "68cc7dc84044413a0a3728837d2045113d3388a40662ccf7973fe5112d93e337",
+        "idp_edl": "a1a90e23dcd55f3ac65410c97d7cd77fc0f7c8d4b7cf0e5ccb02b408b866b6ca",
+        "iupred2a": "3503ed8d81cfed9e3f079be78d299669a3c8d71795046b32f99474c2469ffd54",
+        "lora_dr_suite": "e1b2bb3b168b21fbf54aa0e3e1fc2b73343b89ac7d58219f0f047b41379b4bf0",
+        "metapredict_v3": "aba814654e446539ca61203ee4f0dffc7147072ccba711d1bdf2f5deb8204f01",
+        "punch2": "6dcd5bcade37a208f82635b275cd366f1c168702b725472c0a85e459f3687172",
+        "punch2_light": "d26e00304e952ef978397518d738ac92ac0a6488f35355a2557bfcbfbdb833e6",
+        "seth": "4da189abc95a5f09144425298fafea8117be9bf21e40773d6743555c951d843a",
+        "udonpred": "e0a3d383d1fbeecd1836d303c374a952556cfde64adaf9141b0c0d29cd914c43",
+        "our_ensemble": "9c1f213da4d927b79b047cd09cb2b6280a34ce3db72a0b26c0450449b7dcc81c"
+      },
+      "reference": "914e93573e4910eda82d3cb436256f2ebe38e1061f0c6b127d6ab83649b00c24"
+    }
+  },
+  "scope_limits": [
+    "Full ten-member retraining was not performed during this code release; bounded training and historical-epoch equivalence tests were performed.",
+    "Third-party inference environments were not reinstalled; all baseline continuous-score exports were checked and their metrics independently recomputed.",
+    "Dockerfiles are versioned build recipes; Docker daemon was unavailable and those images were not built during this verification.",
+    "GPU execution and raw-FASTA regeneration of the frozen PLM arrays were not acceptance-tested."
+  ],
+  "source_tests": {
+    "passed": 72,
+    "python": "3.12.3",
+    "numpy": "2.5.3",
+    "torch": "2.14.0+cpu",
+    "command": "python -m pytest -q"
+  },
+  "package_metadata": {
+    "version": "0.3.0",
+    "initializer_sha256": "d6768edbbd1fa1af4f69272422b1a16a0f4cdd83c5bb70fdff7a3ca065c538ec",
+    "change_after_numerical_acceptance": "Align __version__ with the wheel distribution version; no numerical runtime module changed.",
+    "installed_version_alignment_check": "PASS",
+    "installed_cli_help_checks": 9,
+    "installed_configuration_export_check": "PASS"
+  }
+}
