@@ -1,139 +1,171 @@
-# zchen-disorder-predictor
+# Reproducible MSA-free dual-PLM BiGRU disorder prediction
 
-Residue-level intrinsic-disorder prediction heads for protein-language-model embeddings. The project keeps the upstream representation fixed while comparing small prediction heads and evaluating continuous residue scores.
+This repository provides the **paper-v1** ProtT5 + ESMC BiGRU ensemble and
+code for retraining, checkpoint inference and independent metric replay.
+The published model configuration is the original ten-member ensemble that
+produced the frozen six-external-dataset comparison.
 
-ESM2 is an optional upstream encoder. It is not counted as a separate disorder predictor.
+The two branches use ProtT5 layer 24 (1024 channels) and ESMC layer 36 (1152
+channels). Each is concatenated with 42 deterministic sequence features:
+21-category one-hot identity and centered 21-residue category frequencies.
+Each branch has five study-BiGRU heads, with seeds 20260926--20260930.
+The output is the equal average of ten sigmoid probabilities. The frozen
+V2 validation-MCC threshold is **0.49059052769999995**.
 
-## Run the published Docker image
+The paper head includes a learned 256-channel input projection before its
+bidirectional GRU. It is different from the older generic `bigru` interface.
+The exact forward path has no activation between the projection and GRU.
+No MSA, feature normalization, sequence truncation or smoothing is used.
 
-You do not need to clone this repository just to run a published image.
+## Install and inspect the release configuration
+
+Use Python 3.11 for the reference paper environment. The project also tests
+its source interfaces on the runtime recorded in the verification receipt.
 
 ```bash
-docker pull thesnowgoose19750415/zchen-disorder-predictor:cpu-esm2-v1
-
-docker run --rm \
-  thesnowgoose19750415/zchen-disorder-predictor:cpu-esm2-v1 \
-  scripts.predict --help
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -r requirements-paper-cpu.txt
+python -m pip install --no-deps .
+disorder-paper --help
+disorder-paper config --output-dir paper-config
 ```
 
-For a CUDA-capable Docker host:
+For the historical CUDA 12.4 runtime use `requirements-paper-cuda124.txt`
+instead. CPU inference does not require a GPU or scheduler. A local CUDA
+host does not require Slurm; follow your cluster's allocation rules there.
+
+## Resources required for actual paper results
+
+Source installation does **not** download the original training data,
+precomputed PLM arrays, ten learned checkpoints or retained baseline scores.
+Their identities, access status and formats are documented in
+[paper-resources.json](docs/paper-resources.json) and
+[the reproduction guide](docs/reproduce-paper.md).
+
+Checkpoint hashes and original selected epochs are in
+[paper-v1-members.tsv](configs/paper-v1-members.tsv). Supply the authorized
+artifact bundle, with `models/prott5-s20260926/best.pt` and the other nine
+members, then verify it:
 
 ```bash
-docker pull thesnowgoose19750415/zchen-disorder-predictor:gpu-esm2-v1
-
-docker run --rm --gpus all \
-  thesnowgoose19750415/zchen-disorder-predictor:gpu-esm2-v1 \
-  scripts.train --help
+disorder-paper verify-models --models-dir artifacts/models \
+  --members paper-config/paper-v1-members.tsv
 ```
 
-The CPU and GPU images contain the same predictor source code and differ in their PyTorch runtime. The GPU tag requires a working NVIDIA Container Toolkit on the host.
+No downloadable artifact URL is claimed unless it has actually been
+published. The repository does not grant redistribution rights for external
+data, third-party models or containers. The resource manifest reports these
+separately from code availability.
 
-## Input contract
+## Prepare label-free inputs and infer
 
-The main path is:
+Provide a FASTA and two TSV indices with columns `id`, `path`, `key`, `family`:
 
 ```text
-residue embedding [L, D] -> prediction head -> disorder scores [L]
+id      path                 key       family
+protein1 features/pt.npz     layer_24  prott5
 ```
 
-Training manifests contain at least:
-
-```text
-id  split  embedding  embedding_key  labels  mask  length
-```
-
-Embeddings may be `.npy` arrays or `.npz` archives. The current ESM2 handoff uses `layer_30` with width 1280; the embedding family, layer, and width must match the checkpoint. Label value `2` means unknown and is excluded from loss and metrics through the mask.
-
-## Prediction heads
-
-- `linear`: residue-wise linear head
-- `mlp`: multilayer perceptron
-- `tcn`: temporal convolutional head
-- `bigru`: bidirectional GRU sequence-context head
-- `conv_bigru`: convolution plus bidirectional GRU
-
-## Build a manifest
-
-If your handoff contains `catalogue/records.tsv`,
-`development/records.jsonl.gz`, and `catalogue/assets.tsv`, build the shared
-train/validation/test manifests as follows:
+The ESMC index uses `layer_36` and `family=esmc`. Paths are relative to the
+index file, or absolute user-supplied paths. Both indices and the FASTA must
+identify the same complete sequences. NPZ keys are checked explicitly;
+missing layers are errors. The software does not replace missing features.
 
 ```bash
-mkdir -p manifests
-docker run --rm \
-  -v "$PWD/data/handoff:/data/handoff:ro" \
-  -v "$PWD/manifests:/work/manifests" \
-  thesnowgoose19750415/zchen-disorder-predictor:cpu-esm2-v1 \
-  scripts.build_manifest \
-  --data-root /data/handoff \
-  --output-dir /work/manifests/esm2-layer30 \
-  --asset-type esm2 \
-  --embedding-key layer_30
+disorder-paper prepare --fasta inputs/sequences.fasta \
+  --prott5-index inputs/prott5-index.tsv --esmc-index inputs/esmc-index.tsv \
+  --output-dir artifacts/prepared
+
+disorder-paper predict \
+  --prott5-manifest artifacts/prepared/prott5.tsv \
+  --esmc-manifest artifacts/prepared/esmc.tsv \
+  --models-dir artifacts/models --members paper-config/paper-v1-members.tsv \
+  --output results/ensemble.tsv.gz --device cpu --threads 2
 ```
 
-The command writes split TSV files and label/mask assets under `manifests/`.
-Because the TSV stores container-visible paths, keep the `/data/handoff` and
-`/work/manifests` mount points unchanged in later commands. If you already
-have a compatible manifest, skip this step.
+Preparation computes the exact sequence42 features and creates label-free
+manifests. Prediction exports complete 1-based residue coordinates, the ten
+member scores, the two branch means and final ensemble. Output paths must
+be new. This workflow consumes existing matching PLM arrays; it does not
+silently substitute a newly extracted embedding from another encoder revision
+or long-sequence recipe. See the provenance and extraction boundary in the
+reproduction guide.
 
-## Train, predict, and evaluate
+## Retrain the ten heads
 
-Mount source data read-only and outputs/checkpoints read-write:
+Supply frozen development records with `id`, `sequence`, `split`, `labels`
+and optional `mask` fields in JSONL or JSONL.gz. Splits are `train`, `val` or
+`test`; labels are 0, 1 or 2 (unknown). Prepare training inputs separately
+from label-free predictor inputs:
 
 ```bash
-docker run --rm \
-  -v "$PWD/data/handoff:/data/handoff:ro" \
-  -v "$PWD/manifests:/work/manifests:ro" \
-  -v "$PWD/outputs:/work/outputs" \
-  thesnowgoose19750415/zchen-disorder-predictor:cpu-esm2-v1 \
-  scripts.train \
-  --train-manifest /work/manifests/esm2-layer30/train.tsv \
-  --val-manifest /work/manifests/esm2-layer30/val.tsv \
-  --output-dir /work/outputs/mlp-esm2-layer30 \
-  --architecture mlp \
-  --epochs 10 \
-  --device cpu
+disorder-paper prepare-training --fasta inputs/development.fasta \
+  --prott5-index inputs/development-prott5.tsv \
+  --esmc-index inputs/development-esmc.tsv \
+  --records inputs/development-records.jsonl.gz \
+  --output-dir artifacts/development
 
-docker run --rm \
-  -v "$PWD/data/handoff:/data/handoff:ro" \
-  -v "$PWD/manifests:/work/manifests:ro" \
-  -v "$PWD/outputs:/work/outputs" \
-  thesnowgoose19750415/zchen-disorder-predictor:cpu-esm2-v1 \
-  scripts.predict_manifest \
-  --checkpoint /work/outputs/mlp-esm2-layer30/best.pt \
-  --manifest /work/manifests/esm2-layer30/test.tsv \
-  --output /work/outputs/mlp-esm2-layer30/test.prediction.tsv \
-  --device cpu
-
-docker run --rm \
-  -v "$PWD/data/handoff:/data/handoff:ro" \
-  -v "$PWD/manifests:/work/manifests:ro" \
-  -v "$PWD/outputs:/work/outputs" \
-  thesnowgoose19750415/zchen-disorder-predictor:cpu-esm2-v1 \
-  scripts.evaluate \
-  --prediction /work/outputs/mlp-esm2-layer30/test.prediction.tsv \
-  --manifest /work/manifests/esm2-layer30/test.tsv \
-  --output-json /work/outputs/mlp-esm2-layer30/test.metrics.json \
-  --output-protein-tsv /work/outputs/mlp-esm2-layer30/test.protein.tsv
+disorder-paper train-matrix \
+  --prott5-train-manifest artifacts/development/prott5-train.tsv \
+  --prott5-val-manifest artifacts/development/prott5-val.tsv \
+  --esmc-train-manifest artifacts/development/esmc-train.tsv \
+  --esmc-val-manifest artifacts/development/esmc-val.tsv \
+  --output-dir results/retrained --device cpu --threads 2
 ```
 
-The evaluator checks IDs and residue positions, removes unknown or masked residues, and reports residue-level AUROC, average precision, Brier score, calibration error, MCC, F1, coverage, and protein-level summaries. Select a binary threshold on validation data and freeze it before test evaluation.
+Defaults match the paper protocol: ten epochs, batch size four, AdamW,
+residue-weighted masked BCE, no normalization, ProtT5 learning rate 0.0003
+and ESMC learning rate 0.001. Each checkpoint is selected by validation AP
+on logits. Unknown and masked positions do not contribute to loss or metrics.
+Full input hashes, runtime versions, configuration and epoch histories are
+recorded. Read `train --help` for a single family/seed run.
 
-## Embeddings and FASTA
+A complete successful paper matrix writes `results/retrained/members.tsv`.
+Use `--models-dir results/retrained --members results/retrained/members.tsv`
+with the prediction command. Its receipt identifies these as retrained weights.
+Freshly trained weights have new hashes; the historical member table stays fixed.
+An identical seed does not promise byte-identical training across hardware or
+PyTorch versions. No test labels are used for checkpoint or threshold selection.
 
-Precomputed embeddings skip the ESM2 encoder and do not require ESM2 weights. FASTA-to-ESM2 inference requires a compatible local model directory or model download. The checkpoint and encoder must use the same embedding family, layer, and width.
+## Recompute the paper comparison
 
-Do not inject external ESM2 embeddings into an external baseline unless that baseline explicitly documents the same embedding interface. Most published disorder baselines accept FASTA and generate their own internal features.
-
-## Build locally
-
-Clone this repository when you need to inspect or modify source, build an image, or run tests:
+The six sets are MemDis, CAID3 PDB/NOX, CAID2 PDB/NOX and TriZOD. The portable
+replay workflow validates full residue coordinates and native labels/masks,
+then calculates metrics from retained continuous scores with frozen validation
+thresholds. The complete comparison contains our predictor and 13 baseline
+methods, with PUNCH2 also reported at its official 0.39 threshold: **90 rows**.
 
 ```bash
-docker build -f Dockerfile.cpu -t my-disorder-predictor:cpu .
-docker build -f Dockerfile.gpu -t my-disorder-predictor:gpu .
+disorder-paper replay --config paper-config/paper-v1-evaluation.json \
+  --artifact-root artifacts/sixset --output-dir results/replayed
 ```
 
-The image entrypoint is `python -m`, so commands such as `scripts.train` and `scripts.evaluate` are Python modules inside the container. Mount input data read-only and keep checkpoints and generated outputs outside the image.
+The reference table is [paper-v1-reference.tsv](configs/paper-v1-reference.tsv).
+AP, trapezoidal AUPRC, AUROC, MCC/F1, calibration and ranking precision are
+checked against available full-precision reference fields at tolerance 1e-9.
+AP groups tied scores; AP is distinct from trapezoidal AUPRC. Calibration is
+undefined for methods whose scores are not probabilities. The frozen
+validation threshold is never reselected on an external set.
 
-Record the embedding family/layer, model configuration, seed, manifest metadata, exact command, image tag or digest, and output checksums. Do not commit private data, checkpoints, credentials, or generated outputs.
+`export-resources --help` describes how an owner of the retained experiment
+artifacts can create a portable, checksummed replay bundle. This is metric
+replay from scores; running the 13 third-party predictors again additionally
+requires their environments, weights and inputs. The variants, exact source
+identity and known gaps are in [baseline-reproduction.md](docs/baseline-reproduction.md).
+
+## Verification and existing interfaces
+
+```bash
+python -m pip install -e '.[dev]'
+python -m pytest -q
+```
+
+See [verification.md](docs/verification.md) for the actual tested runtimes,
+real-checkpoint agreement and full six-set replay evidence. Tests do not
+substitute for access to the actual trained models and frozen datasets.
+
+The general MLP, TCN, ESM2 and other older interfaces remain available as
+historical source workflows in [legacy-workflows.md](docs/legacy-workflows.md).
+They are not the paper-v1 model configuration. Ongoing seed, CNN, positional
+and topology experiments do not change the versioned paper-v1 result.

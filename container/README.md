@@ -1,91 +1,37 @@
-# Container workflow
+# Paper-v1 container execution
 
-This directory documents the portable container workflow. It does not contain
-dataset paths, host-specific instructions, or deployment credentials.
+Build from this exact source revision:
 
-The image entrypoint is Python module mode. The public Docker Hub images are
-the easiest way to run the project; cloning this repository is only needed for
-source inspection, local development, or rebuilding the image.
+```bash
+docker build -f Dockerfile.cpu -t disorder-paper:cpu .
+docker build -f Dockerfile.gpu -t disorder-paper:cuda124 .
+docker run --rm disorder-paper:cpu --help
+```
 
-## Pull a published image
+The images install the `disorder-paper` command and include the paper
+configuration and documentation. CPU requirements pin NumPy 2.1.2 and
+PyTorch 2.5.1+cpu. The GPU base pins PyTorch 2.5.1, CUDA 12.4 and cuDNN 9.
+Base tags are version constraints; record the resolved image digest when
+building. No unverified registry tag is advertised as already published.
 
-Choose the image that matches the available hardware:
+Mount user-provided resources read-only and a new output directory read-write.
+For example, after exporting a portable replay artifact bundle:
 
-~~~bash
-docker pull thesnowgoose19750415/zchen-disorder-predictor:cpu-esm2-v1
-docker pull thesnowgoose19750415/zchen-disorder-predictor:gpu-esm2-v1
-~~~
+```bash
+docker run --rm -v "$PWD/artifacts:/artifacts:ro" -v "$PWD/results:/results" \
+  disorder-paper:cpu replay --help
+```
 
-Check the command-line interface without mounting any data:
+Use `--gpus all` on a compatible local Docker GPU host. On a shared cluster,
+obtain the required allocation before GPU execution. The software does not
+require Slurm on a standalone machine. The images do not contain checkpoints,
+PLM weights, data or third-party predictors. Their access requirements are in
+`docs/paper-resources.json` and `docs/baseline-reproduction.md`.
 
-~~~bash
-docker run --rm \
-  thesnowgoose19750415/zchen-disorder-predictor:cpu-esm2-v1 \
-  scripts.predict --help
-~~~
+The general historical `scripts.*` interfaces remain source entry points.
+Their ESM2 workflows are distinct from the paper-v1 dual-PLM model. To inspect
+one inside the source-containing image, use an explicit Python entrypoint:
 
-For a GPU run, use the GPU tag and expose the host GPU:
-
-~~~bash
-docker run --rm --gpus all \
-  thesnowgoose19750415/zchen-disorder-predictor:gpu-esm2-v1 \
-  scripts.train --help
-~~~
-
-## Build locally
-
-Cloning the repository is required only when building or modifying the image.
-Run these commands from the repository root:
-
-~~~bash
-docker build -f Dockerfile.cpu -t my-disorder-predictor:cpu .
-docker run --rm my-disorder-predictor:cpu scripts.predict --help
-
-docker build -f Dockerfile.gpu -t my-disorder-predictor:gpu .
-docker run --rm --gpus all my-disorder-predictor:gpu scripts.train --help
-~~~
-
-The CPU and GPU images contain the same predictor source code. They differ in
-their PyTorch/CUDA runtime. The GPU image requires a compatible NVIDIA runtime
-on the host.
-
-## Mount data and outputs
-
-Input data should be mounted read-only. Manifests, predictions, metrics, and
-checkpoints should be mounted to a separate writable output directory:
-
-~~~bash
-docker run --rm \
-  -v "$PWD/data/handoff:/data/handoff:ro" \
-  -v "$PWD/manifests:/work/manifests:ro" \
-  -v "$PWD/outputs:/work/outputs" \
-  thesnowgoose19750415/zchen-disorder-predictor:cpu-esm2-v1 \
-  scripts.predict_manifest \
-  --checkpoint /work/outputs/checkpoint/best.pt \
-  --manifest /work/manifests/test.tsv \
-  --output /work/outputs/test-predictions.tsv \
-  --device cpu
-~~~
-
-Replace the paths and arguments with the files in your own environment. Do
-not place private datasets, model checkpoints, credentials, or generated
-outputs in this repository.
-
-## Archive conversion
-
-If a Docker daemon is unavailable on the execution machine, export the image
-as an archive and convert it with Apptainer on a machine that supports that
-workflow:
-
-~~~bash
-docker save thesnowgoose19750415/zchen-disorder-predictor:cpu-esm2-v1 \
-  -o predictor-cpu-esm2-v1.tar
-
-apptainer build predictor-cpu-esm2-v1.sif \
-  docker-archive://predictor-cpu-esm2-v1.tar
-~~~
-
-The resulting SIF is a portable copy of the image. The exact execution
-command depends on the target machine's scheduler and filesystem policy, so
-those site-specific instructions should be documented separately from this
-public repository.
+```bash
+docker run --rm --entrypoint python disorder-paper:cpu -m scripts.predict --help
+```

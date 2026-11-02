@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "model_id": "paper-v1-prott5-esmc-bigru",
+  "architecture": "study:bigru",
+  "source_snapshot": "0cd0fcd99cef5c64e91ace24242f0793e287746b",
+  "head": {
+    "width": 256,
+    "dropout": 0.1,
+    "input_projection_activation": "none",
+    "gru_layers": 1,
+    "bidirectional": true
+  },
+  "branches": {
+    "prott5": {
+      "embedding_key": "layer_24",
+      "embedding_width": 1024,
+      "input_width": 1066,
+      "learning_rate": 0.0003
+    },
+    "esmc": {
+      "embedding_key": "layer_36",
+      "embedding_width": 1152,
+      "input_width": 1194,
+      "learning_rate": 0.001
+    }
+  },
+  "sequence_features": {
+    "alphabet": "ACDEFGHIKLMNPQRSTVWY",
+    "unknown_index": 20,
+    "window_size": 21,
+    "channels": 42,
+    "dtype": "float32",
+    "order": [
+      "one_hot_21",
+      "centered_window_frequency_21"
+    ],
+    "boundary": "shorten_window"
+  },
+  "seeds": [
+    20260926,
+    20260927,
+    20260928,
+    20260929,
+    20260930
+  ],
+  "training": {
+    "epochs": 10,
+    "batch_size": 4,
+    "loss": "masked_residue_mean_bce_with_logits",
+    "checkpoint_objective": "validation_average_precision_on_logits",
+    "shuffle_train": true,
+    "normalization": "none",
+    "optimizer": "AdamW",
+    "weight_decay": 0.01,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "amsgrad": false
+  },
+  "ensemble": {
+    "input": "sigmoid_probability",
+    "operation": "mean_over_seed((prott5_probability + esmc_probability)/2)",
+    "accumulation_dtype": "float64"
+  },
+  "classification": {
+    "threshold": 0.49059052769999995,
+    "source": "V2 validation global residue MCC",
+    "comparison": "score >= threshold"
+  },
+  "model_members": "paper-v1-members.tsv",
+  "msa": false,
+  "smoothing": false,
+  "truncate": false
+}

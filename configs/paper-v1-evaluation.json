@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "artifact": {
+    "records": "records.jsonl.gz",
+    "thresholds": "thresholds.json",
+    "scores_directory": "scores"
+  },
+  "reference": {
+    "path": "paper-v1-reference.tsv",
+    "tolerance": 1e-09
+  },
+  "protocol": {
+    "score_comparison": "score >= threshold",
+    "threshold_selection": "Use the frozen global residue-level MCC threshold selected on V2 development validation; external labels never select thresholds.",
+    "cohort": "all_native_records",
+    "aggregation": "pool valid labeled residues within each dataset",
+    "ranking_ties": "fractional expected precision within tied-score boundary group",
+    "ece_bins": 10,
+    "tie_policy": "group equal scores before AP, trapezoidal AUPRC, AUROC, threshold scan, and P@K"
+  },
+  "datasets": [
+    {
+      "id": "MemDis_test",
+      "name": "MemDis",
+      "proteins": 196,
+      "full_residues": 173889,
+      "valid_residues": 8644,
+      "positive_residues": 3437
+    },
+    {
+      "id": "CAID3_PDB",
+      "name": "CAID3 PDB",
+      "proteins": 319,
+      "full_residues": 160422,
+      "valid_residues": 99239,
+      "positive_residues": 31401
+    },
+    {
+      "id": "CAID3_NOX",
+      "name": "CAID3 NOX",
+      "proteins": 204,
+      "full_residues": 100518,
+      "valid_residues": 99977,
+      "positive_residues": 26367
+    },
+    {
+      "id": "CAID2_PDB",
+      "name": "CAID2 PDB",
+      "proteins": 348,
+      "full_residues": 287020,
+      "valid_residues": 130877,
+      "positive_residues": 37072
+    },
+    {
+      "id": "CAID2_NOX",
+      "name": "CAID2 NOX",
+      "proteins": 210,
+      "full_residues": 160802,
+      "valid_residues": 160802,
+      "positive_residues": 31315
+    },
+    {
+      "id": "TriZOD_test",
+      "name": "TriZOD",
+      "proteins": 348,
+      "full_residues": 38526,
+      "valid_residues": 37133,
+      "positive_residues": 3150
+    }
+  ],
+  "predictors": [
+    {
+      "id": "adopt",
+      "name": "ADOPT",
+      "source_root": "baseline",
+      "source_run": "evaluation/adopt-esm1b-sixset-20261029-retry1",
+      "score_column": "score",
+      "probabilities": false,
+      "validation_policy": "development-validation MCC threshold",
+      "receipt": "COMPLETE.json"
+    },
+    {
+      "id": "aiupred",
+      "name": "AIUPred",
+      "source_root": "baseline",
+      "source_run": "evaluation/aiupred-preoct-c5cd-20261029",
+      "score_column": "score",
+      "probabilities": true,
+      "validation_policy": "development-validation MCC threshold",
+      "receipt": "COMPLETE.json"
+    },
+    {
+      "id": "dispredict3",
+      "name": "DisPredict3.0",
+      "source_root": "baseline",
+      "source_run": "evaluation/dispredict3-sixset-20261030-r1",
+      "score_column": "score",
+      "probabilities": true,
+      "validation_policy": "V2 validation global residue-level MCC threshold",
+      "receipt": "COMPLETE.json"
+    },
+    {
+      "id": "esmdispred_dnn",
+      "name": "ESMDisPred-DNN",
+      "source_root": "baseline",
+      "source_run": "evaluation/esmdispred-dnn-sixset-recovery-20261030-r1",
+      "score_column": "score",
+      "probabilities": true,
+      "validation_policy": "V2 validation global residue-level MCC threshold",
+      "receipt": "COMPLETE.json"
+    },
+    {
+      "id": "fldpnn",
+      "name": "flDPnn",
+      "source_root": "baseline",
+      "source_run": "evaluation/fldpnn-original-merged-20261029",
+      "score_column": "score",
+      "probabilities": true,
+      "validation_policy": "accepted development-validation MCC threshold 0.173",
+      "receipt": "COMPLETE.json"
+    },
+    {
+      "id": "idp_edl",
+      "name": "IDP-EDL",
+      "source_root": "baseline",
+      "source_run": "evaluation/idp-edl-complete-20261029",
+      "score_column": "score",
+      "probabilities": true,
+      "validation_policy": "development-validation MCC threshold",
+      "receipt": "COMPLETE.json"
+    },
+    {
+      "id": "iupred2a",
+      "name": "IUPred2A",
+      "source_root": "baseline",
+      "source_run": "evaluation/iupred2a",
+      "score_column": "score",
+      "probabilities": true,
+      "validation_policy": "frozen/development-validation threshold",
+      "receipt": "COMPLETE.json"
+    },
+    {
+      "id": "lora_dr_suite",
+      "name": "LoRA-DR-suite",
+      "source_root": "baseline",
+      "source_run": "evaluation/lora-dr-suite-raw-v2-20261028",
+      "score_column": "score",
+      "probabilities": true,
+      "validation_policy": "frozen/development-validation threshold",
+      "receipt": "COMPLETE.json"
+    },
+    {
+      "id": "metapredict_v3",
+      "name": "metapredict V3",
+      "source_root": "baseline",
+      "source_run": "evaluation/metapredict_v3-canonical-20261028",
+      "score_column": "score",
+      "probabilities": true,
+      "validation_policy": "frozen/development-validation threshold",
+      "receipt": "COMPLETE.json"
+    },
+    {
+      "id": "punch2",
+      "name": "PUNCH2",
+      "source_root": "punch2",
+      "source_run": "outputs",
+      "score_column": "punch2",
+      "probabilities": true,
+      "validation_policy": "development-validation MCC threshold",
+      "threshold_source": "handoff_validation_thresholds",
+      "official_threshold": 0.39,
+      "official_policy": "official default threshold 0.39",
+      "source_note": "Root supplied via --punch2-root contains outputs/<dataset>/prediction.tsv.gz."
+    },
+    {
+      "id": "punch2_light",
+      "name": "PUNCH2-Light",
+      "source_root": "baseline",
+      "source_run": "evaluation/punch2_light",
+      "score_column": "score",
+      "probabilities": true,
+      "validation_policy": "frozen/development-validation threshold",
+      "receipt": "COMPLETE.json"
+    },
+    {
+      "id": "seth",
+      "name": "SETH",
+      "source_root": "baseline",
+      "source_run": "evaluation/seth",
+      "score_column": "score",
+      "probabilities": false,
+      "validation_policy": "frozen/development-validation threshold",
+      "receipt": "COMPLETE.json"
+    },
+    {
+      "id": "udonpred",
+      "name": "UdonPred",
+      "source_root": "baseline",
+      "source_run": "evaluation/udonpred-sixset-20261030-r1",
+      "score_column": "score",
+      "probabilities": true,
+      "validation_policy": "V2 validation global residue-level MCC threshold",
+      "receipt": "COMPLETE.json"
+    },
+    {
+      "id": "our_ensemble",
+      "name": "Our ensemble",
+      "source_root": "own",
+      "source_run": "outputs",
+      "score_column": "ours_ensemble",
+      "probabilities": true,
+      "validation_policy": "own validation-MCC threshold",
+      "threshold_source": "own_handoff_validation_thresholds"
+    }
+  ]
+}

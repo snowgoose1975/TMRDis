@@ -1,0 +1,4 @@
+# Reference historical CUDA runtime; requires a compatible host driver.
+--extra-index-url https://download.pytorch.org/whl/cu124
+numpy==2.1.2
+torch==2.5.1+cu124

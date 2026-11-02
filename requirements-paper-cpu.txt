@@ -1,0 +1,4 @@
+# Reference paper CPU environment. Python 3.11.10 was used in the retained runtime.
+--extra-index-url https://download.pytorch.org/whl/cpu
+numpy==2.1.2
+torch==2.5.1+cpu

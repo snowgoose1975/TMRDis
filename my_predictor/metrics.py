@@ -34,11 +34,15 @@ def average_precision(
     if count == 0 or positives == 0:
         return float("nan")
     order = np.argsort(-scores, kind="mergesort")
-    ordered_labels = labels[order]
-    cumulative = np.cumsum(ordered_labels)
-    positions = np.arange(1, count + 1)
-    precision = cumulative / positions
-    return float(precision[ordered_labels == 1].sum() / positives)
+    ordered_scores = scores[order]
+    cumulative = np.cumsum(labels[order])
+    # Evaluate precision only after every example with the same score has
+    # entered the prediction set, so ties cannot depend on input ordering.
+    ends = np.r_[np.flatnonzero(np.diff(ordered_scores)), count - 1]
+    true_positives = cumulative[ends]
+    precision = true_positives / (ends + 1)
+    recall_increments = np.diff(np.r_[0, true_positives]) / positives
+    return float(np.sum(recall_increments * precision))
 
 
 def auroc(
