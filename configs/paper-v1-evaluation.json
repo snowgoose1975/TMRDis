@@ -204,12 +204,12 @@
     },
     {
       "id": "our_ensemble",
-      "name": "Our ensemble",
+      "name": "TMRDis",
       "source_root": "own",
       "source_run": "outputs",
       "score_column": "ours_ensemble",
       "probabilities": true,
-      "validation_policy": "own validation-MCC threshold",
+      "validation_policy": "TMRDis validation-MCC threshold",
       "threshold_source": "own_handoff_validation_thresholds"
     }
   ]

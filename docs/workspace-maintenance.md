@@ -1,6 +1,6 @@
 # Publication workspace layout
 
-The paper-v1 release preserves the exact model and evaluation contract in
+The TMRDis paper-v1 release preserves the exact model and evaluation contract in
 `configs/paper-v1.json`. `my_predictor/` contains installed runtime code;
 `configs/` contains frozen protocol and model identities; `docs/` contains
 commands and provenance; `tests/` contains bounded checks. Runtime arrays,

@@ -1,7 +1,8 @@
-# Reproducible MSA-free dual-PLM BiGRU disorder prediction
+# TMRDis: Reproducible MSA-free dual-PLM BiGRU disorder prediction
 
-This repository provides the **paper-v1** ProtT5 + ESMC BiGRU ensemble and
-code for retraining, checkpoint inference and independent metric replay.
+This repository provides **TMRDis (paper-v1)**, the ProtT5 + ESMC BiGRU
+ensemble, and code for retraining, checkpoint inference and independent metric
+replay.
 The published model configuration is the original ten-member ensemble that
 produced the frozen six-external-dataset comparison.
 
@@ -133,7 +134,7 @@ PyTorch versions. No test labels are used for checkpoint or threshold selection.
 The six sets are MemDis, CAID3 PDB/NOX, CAID2 PDB/NOX and TriZOD. The portable
 replay workflow validates full residue coordinates and native labels/masks,
 then calculates metrics from retained continuous scores with frozen validation
-thresholds. The complete comparison contains our predictor and 13 baseline
+thresholds. The complete comparison contains TMRDis and 13 baseline
 methods, with PUNCH2 also reported at its official 0.39 threshold: **90 rows**.
 
 ```bash
@@ -167,5 +168,5 @@ substitute for access to the actual trained models and frozen datasets.
 
 The general MLP, TCN, ESM2 and other older interfaces remain available as
 historical source workflows in [legacy-workflows.md](docs/legacy-workflows.md).
-They are not the paper-v1 model configuration. Ongoing seed, CNN, positional
+They are not the TMRDis paper-v1 model configuration. Ongoing seed, CNN, positional
 and topology experiments do not change the versioned paper-v1 result.

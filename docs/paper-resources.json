@@ -1,5 +1,6 @@
 {
   "schema_version": 1,
+  "model_name": "TMRDis",
   "model_id": "paper-v1-prott5-esmc-bigru",
   "code_repository": "https://github.com/snowgoose1975/zchen-disorder-predictor",
   "resources": [

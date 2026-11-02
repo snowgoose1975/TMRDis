@@ -1,4 +1,4 @@
-# Reproducing the paper-v1 six-set baseline comparison
+# Reproducing the TMRDis paper-v1 six-set baseline comparison
 
 This workflow separates metric replay from model inference. Metric replay needs
 only the frozen residue labels/masks, full-length residue score tables, the

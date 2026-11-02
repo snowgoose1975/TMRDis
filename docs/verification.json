@@ -1,5 +1,6 @@
 {
   "schema_version": 1,
+  "model_name": "TMRDis",
   "model_id": "paper-v1-prott5-esmc-bigru",
   "validated_local_source_snapshot": "b4601a9a79616429700ad4b34736fd41a03db09f",
   "snapshot_scope": "Immutable local source archive; published runtime files are identified individually by SHA256 below.",
