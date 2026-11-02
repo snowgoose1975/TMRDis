@@ -1,4 +1,4 @@
-# Paper-v1 verification record
+# TMRDis paper-v1 verification record
 
 The machine-readable [verification.json](verification.json) records source
 fingerprints, the tested wheel, actual coverage and reference comparisons.
@@ -37,7 +37,7 @@ This sample agreement is not a guarantee of bitwise equality on all hardware.
 ## Full six-dataset metric replay
 
 The replay artifact contains 1,625 full-sequence records and continuous scores
-for our model plus 13 baselines. IDs, full residue coordinates, sequence
+for TMRDis plus 13 baselines. IDs, full residue coordinates, sequence
 letters, native masks, finite scores and cohort counts are checked for each
 method. Artifact files are SHA256-verified before evaluation.
 

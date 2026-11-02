@@ -1,5 +1,6 @@
 {
   "schema_version": 1,
+  "model_name": "TMRDis",
   "model_id": "paper-v1-prott5-esmc-bigru",
   "architecture": "study:bigru",
   "source_snapshot": "0cd0fcd99cef5c64e91ace24242f0793e287746b",

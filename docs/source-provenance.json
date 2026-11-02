@@ -1,4 +1,5 @@
 {
+  "model_name": "TMRDis",
   "public_base_revision": "f07ffcd5c9a9e0203ea18795516fb70620098c96",
   "paper_model_snapshot": "0cd0fcd99cef5c64e91ace24242f0793e287746b",
   "verified_source_ports": {

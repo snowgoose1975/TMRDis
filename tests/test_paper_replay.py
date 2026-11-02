@@ -176,6 +176,12 @@ class PaperReplayTests(unittest.TestCase):
         from my_predictor.paper_replay import DEFAULT_CONFIG, load_config
 
         config = load_config(DEFAULT_CONFIG)
+        model = json.loads((DEFAULT_CONFIG.parent / "paper-v1.json").read_text(encoding="utf-8"))
+        self.assertEqual(model["model_name"], "TMRDis")
+        own = [predictor for predictor in config["predictors"] if predictor["id"] == "our_ensemble"]
+        self.assertEqual(len(own), 1)
+        self.assertEqual(own[0]["name"], "TMRDis")
+        self.assertEqual(own[0]["validation_policy"], "TMRDis validation-MCC threshold")
         self.assertEqual(len(config["datasets"]), 6)
         self.assertEqual(len(config["predictors"]), 14)
         self.assertTrue(all(d["proteins"] > 0 and d["full_residues"] >= d["valid_residues"] > 0
@@ -185,6 +191,7 @@ class PaperReplayTests(unittest.TestCase):
             rows = list(csv.DictReader(stream, delimiter="\t"))
         self.assertEqual(len(rows), 90)
         self.assertEqual(set(row["dataset"] for row in rows), {d["name"] for d in config["datasets"]})
+        self.assertEqual(sum(row["model"] == "TMRDis" for row in rows), 6)
         policies = {(row["model"], row["threshold_policy"]) for row in rows}
         self.assertTrue(all((p["name"], p["validation_policy"]) in policies for p in config["predictors"]))
         self.assertEqual(sum(1 for row in rows if row["model"] == "PUNCH2"), 12)

@@ -1,4 +1,4 @@
-# Paper-v1 reproduction contract
+# TMRDis paper-v1 reproduction contract
 
 Use the current root README for the tested CLI workflow and
 `configs/paper-v1.json` for all model and training settings. Export the
@@ -7,7 +7,8 @@ The directory must be new. Every CLI also provides `--help`.
 
 ## Inputs and model identity
 
-The accepted checkpoints are identified by their bytes, not just seed names.
+TMRDis is the predictor name; `paper-v1` identifies this frozen model version.
+Its accepted checkpoints are identified by their bytes, not just seed names.
 The member TSV records family, seed, learning rate, selected epoch, validation
 AP, relative checkpoint path and SHA256. The corresponding study BiGRU has a
 256-dimensional linear input projection, one bidirectional 256-unit GRU layer,
